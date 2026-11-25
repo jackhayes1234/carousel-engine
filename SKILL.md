@@ -1,6 +1,6 @@
 ---
 name: carousel-engine
-description: Turn a carousel script plus messy screenshots into finished Instagram/LinkedIn carousel slides (1080x1350 PNGs, a PDF and a contact sheet) in the user's brand fonts and colours. Use when the user says "make a carousel", drops a script with "Slide 1, Slide 2...", or hands over screenshots for slides. Also use when they ask to set up, install or check the carousel engine, to start a new carousel, or to learn or copy their style from their own carousels or Instagram.
+description: Turn a carousel script plus messy screenshots into finished Instagram/LinkedIn carousel slides (1080x1350 PNGs, a PDF and a contact sheet) in the user's brand fonts and colours. Use when the user says "make a carousel", drops a script with "Slide 1, Slide 2...", or hands over screenshots for slides. Also use when they ask to set up, install or check the carousel engine, to start a new carousel, to learn or copy their style from their own carousels or Instagram, or to turn a carousel into a Reel.
 ---
 
 # Carousel engine
@@ -36,8 +36,7 @@ Check each item and fix what you can. Tell the user, in plain words, about anyth
    Download your information), unzip it and copy the carousel images from its `media/posts` folders into `style/`.
    Don't scrape Instagram or log in to it for them.
 2. **Study every image** (open each one and look). Write `~/Desktop/Carousels/style.md` covering:
-   palette (exact hex values), fonts (closest installed match: look in `/System/Library/Fonts`,
-   `/Library/Fonts` and `~/Library/Fonts`; ask if they own the real font files), how they
+   palette (exact hex values), fonts (see *Fonts* below), how they
    emphasise words (underline, highlighter, colour, circled, all caps), how they treat photos (stickers, frames,
    tilt, outlines, full-bleed), backgrounds and textures, text placement and density, which layouts they reuse,
    and their writing voice (hooks, sentence length, slang, sign-offs, emoji use).
@@ -51,6 +50,33 @@ Check each item and fix what you can. Tell the user, in plain words, about anyth
    what still feels off.
 5. From now on, read `style.md` before every carousel: match their voice when splitting copy and choosing
    emphasis, and prefer the layouts they actually use.
+
+## Fonts
+
+Pick fonts in this order, and use the same choice in `style.md`:
+1. **The user's own font files.** Ask if they have the real ones (.ttf, .otf, .woff2). Copy them into
+   `~/Desktop/Carousels/fonts/`.
+2. **Bundled free fonts**, if `~/.claude/skills/ui-styling/canvas-fonts/` exists. It has 29 OFL-licensed families
+   (e.g. Bricolage Grotesque, Instrument Serif, Boldonse, Gloock, Young Serif, Outfit, Work Sans, Lora). Look at
+   the list, pick the closest match by shape and mood, and copy the chosen weight files plus the family's
+   `-OFL.txt` into `~/Desktop/Carousels/fonts/`.
+3. **Google Fonts.** Add the stylesheet URL to `"font_css": ["https://fonts.googleapis.com/css2?family=Name:wght@400;700&display=swap"]`
+   and use the family name. This needs internet access when rendering.
+4. **Installed fonts** in `/System/Library/Fonts`, `/Library/Fonts` and `~/Library/Fonts`.
+
+For a font file, write `"headline": {"file": "fonts/BricolageGrotesque-Bold.ttf", "weight": 700}` in brand.json.
+The path is relative to brand.json. Use one file per role, matching its weight and style.
+After changing fonts, render a test slide and check the headline: tall display fonts need more line spacing
+(e.g. `"css": [".h{line-height:1.18}"]`) so underlines don't collide with the next line.
+
+## A fresh look (no examples, or the user wants something new)
+
+If `~/.claude/skills/ui-ux-pro-max/` exists, search its palettes and font pairings with words that fit the account
+(topic, mood, audience):
+`cd ~/.claude/skills/ui-ux-pro-max && python3 scripts/search.py "<mood words>" --domain typography -n 3`
+`cd ~/.claude/skills/ui-ux-pro-max && python3 scripts/search.py "<mood words>" --domain color -n 3`
+Show the user two or three options as quick one-slide renders, then save the chosen one as the brand.
+Without that skill, choose a palette and a pairing from the bundled or Google fonts yourself.
 
 ## Styling hooks
 
@@ -72,7 +98,7 @@ Text auto-shrinks to fit even with transforms, so tilts and shadows are safe.
 ## Start a new carousel
 
 When the user says "new carousel" (or gives a topic), make `~/Desktop/Carousels/<short-name>/shots/`,
-copy the saved brand.json into it if there is one, and open the folder in Finder (`open <folder>`).
+and open the folder in Finder (`open <folder>`). Don't copy brand.json: jobs point at the shared one.
 Then tell them to:
 - drop their screenshots into the `shots` folder, and
 - paste their script into the chat, or save it as `script.txt` in the folder.
@@ -82,15 +108,14 @@ If they paste the script, save it to `<job>/script.txt` yourself. When both are 
 ## Steps
 
 1. **Collect inputs.** The script is in `<job>/script.txt` and the screenshots are in `<job>/shots/`.
-   If the user gives a brand (colours, fonts, font files, or a reference slide image), write
-   `<job>/brand.json` (see `example/brand.json`). From a reference image, read the background,
-   text and accent colours and the closest installed fonts. Font files go in `"file"` (relative to brand.json).
-   Google Fonts stylesheet URLs go in `"font_css": [...]`.
+   Use the shared brand. If there isn't one yet and the user gives colours, fonts or a reference slide,
+   write `~/Desktop/Carousels/brand.json` (see `example/brand.json`), choosing fonts as in *Fonts*.
 
 2. **Split the script.**
    `python3 engine.py parse <job>/script.txt > <job>/slides.json`
    Then edit slides.json yourself:
-   - Set `"brand": "brand.json"` if the job has one. The handle comes from brand.json; set `"handle"` here only to override it.
+   - Set `"brand": "../brand.json"` (the shared brand in `~/Desktop/Carousels/`) if it exists. Use a job's own
+     brand.json only for a one-off look. The handle comes from the brand; set `"handle"` here only to override it.
    - Fix headline/body splits. Keep headlines short and punchy, and put the rest in body.
    - Mark emphasis: `*word*` gives an accent underline, `_word_` gives the aside font in the accent colour.
      Use at most one or two per slide, on the words that carry the point.
@@ -114,7 +139,17 @@ If they paste the script, save it to `<job>/script.txt` yourself. When both are 
    Then re-render. Repeat until every slide is clean.
 
 6. **Hand over.** Give the user the slide paths, plus an Instagram caption (hook line, 2–3 lines of
-   value, a call to action, 3–5 niche hashtags) and one line of alt text per slide.
+   value, a call to action, 3–5 niche hashtags) and one line of alt text per slide. Write the caption in their
+   voice from `style.md`, then run it through the `no-ai-slop` skill if it's installed. Without it, cut filler,
+   hedges, stacked em dashes, "here's the thing" openers and lists of three. Do the same for any slide copy you
+   wrote or tightened, but never for the user's own copy unless they ask.
+
+## Turn it into a Reel (when the user asks)
+
+If the `hyperframes` skill is installed, use it to animate the finished `out/slideNN.png` files into a
+1080x1920 vertical video: about 2.5 seconds per slide, the slide centred on the brand background colour, with a
+simple swipe or push between slides, and no music unless the user supplies a track. Save it as `<job>/out/reel.mp4`.
+Without the skill, say it isn't installed on this computer.
 
 ## Rules
 

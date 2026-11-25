@@ -56,10 +56,10 @@ Check each item and fix what you can. Tell the user, in plain words, about anyth
 Pick fonts in this order, and use the same choice in `style.md`:
 1. **The user's own font files.** Ask if they have the real ones (.ttf, .otf, .woff2). Copy them into
    `~/Desktop/Carousels/fonts/`.
-2. **Bundled free fonts**, if `~/.claude/skills/ui-styling/canvas-fonts/` exists. It has 29 OFL-licensed families
-   (e.g. Bricolage Grotesque, Instrument Serif, Boldonse, Gloock, Young Serif, Outfit, Work Sans, Lora). Look at
-   the list, pick the closest match by shape and mood, and copy the chosen weight files plus the family's
-   `-OFL.txt` into `~/Desktop/Carousels/fonts/`.
+2. **Bundled free fonts** in this skill's `fonts/` folder (always present): 27 OFL-licensed families, e.g.
+   Bricolage Grotesque, Boldonse, Gloock, Young Serif, Outfit, Work Sans, Lora, Crimson Pro, Instrument Sans,
+   Big Shoulders, Italiana, Nothing You Could Do (handwritten). List the folder, pick the closest match by shape
+   and mood, and copy the chosen weight files plus the family's `-OFL.txt` into `~/Desktop/Carousels/fonts/`.
 3. **Google Fonts.** Add the stylesheet URL to `"font_css": ["https://fonts.googleapis.com/css2?family=Name:wght@400;700&display=swap"]`
    and use the family name. This needs internet access when rendering.
 4. **Installed fonts** in `/System/Library/Fonts`, `/Library/Fonts` and `~/Library/Fonts`.
@@ -76,7 +76,9 @@ If `~/.claude/skills/ui-ux-pro-max/` exists, search its palettes and font pairin
 `cd ~/.claude/skills/ui-ux-pro-max && python3 scripts/search.py "<mood words>" --domain typography -n 3`
 `cd ~/.claude/skills/ui-ux-pro-max && python3 scripts/search.py "<mood words>" --domain color -n 3`
 Show the user two or three options as quick one-slide renders, then save the chosen one as the brand.
-Without that skill, choose a palette and a pairing from the bundled or Google fonts yourself.
+Without that skill (it's optional), choose a palette yourself and a pairing from the bundled fonts. Contrast a
+characterful headline with a plain body: for example Boldonse with Work Sans, Gloock with Instrument Sans, or
+Young Serif with Outfit.
 
 ## Styling hooks
 
@@ -140,16 +142,18 @@ If they paste the script, save it to `<job>/script.txt` yourself. When both are 
 
 6. **Hand over.** Give the user the slide paths, plus an Instagram caption (hook line, 2–3 lines of
    value, a call to action, 3–5 niche hashtags) and one line of alt text per slide. Write the caption in their
-   voice from `style.md`, then run it through the `no-ai-slop` skill if it's installed. Without it, cut filler,
-   hedges, stacked em dashes, "here's the thing" openers and lists of three. Do the same for any slide copy you
+   voice from `style.md`, then edit it with no-ai-slop: use the `no-ai-slop` skill if it's installed, otherwise
+   read `vendor/no-ai-slop/SKILL.md` in this skill's folder and follow it. Do the same for any slide copy you
    wrote or tightened, but never for the user's own copy unless they ask.
 
 ## Turn it into a Reel (when the user asks)
 
-If the `hyperframes` skill is installed, use it to animate the finished `out/slideNN.png` files into a
+Use the `hyperframes` skill. If it isn't installed, ask the user first, then install it with
+`npx skills add heygen-com/hyperframes --all` (it needs Node.js) and ask them to restart Claude Code before continuing.
+Then use it to animate the finished `out/slideNN.png` files into a
 1080x1920 vertical video: about 2.5 seconds per slide, the slide centred on the brand background colour, with a
 simple swipe or push between slides, and no music unless the user supplies a track. Save it as `<job>/out/reel.mp4`.
-Without the skill, say it isn't installed on this computer.
+
 
 ## Rules
 

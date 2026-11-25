@@ -35,3 +35,12 @@ paste your script into the chat, and approve the slide plan. Finished slides lan
 
 ## Check it works
     cd ~/.claude/skills/carousel-engine && python3 -m unittest test_engine
+
+## What's bundled
+- `fonts/`: 27 free font families from the OFL-licensed set shipped with the ui-styling skill. Each family's
+  licence is next to its files.
+- `vendor/no-ai-slop/`: the no-ai-slop writing skill by Peter Yang (MIT licence, see its LICENSE), used to edit
+  captions.
+- Optional extras, used if installed: `ui-ux-pro-max` for palette ideas, and `hyperframes` for Reels (Claude
+  offers to install it the first time you ask for a Reel).
+

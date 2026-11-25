@@ -11,7 +11,11 @@ a LinkedIn-ready PDF and a contact sheet, in your brand fonts and colours.
 - Xcode Command Line Tools for the cutout step: `xcode-select --install`
 
 ## Install
-Unzip, then move the `carousel-engine` folder into `~/.claude/skills/`:
+From GitHub (you need an invite to this private repo):
+
+    git clone https://github.com/jackhayes1234/carousel-engine ~/.claude/skills/carousel-engine
+
+Or from the zip: unzip, then move the `carousel-engine` folder into `~/.claude/skills/`:
 
     unzip carousel-engine.zip -d ~/.claude/skills/
 

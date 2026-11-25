@@ -1,0 +1,8 @@
+{
+  "colors": {"bg": "#111111", "text": "#F5F0E8", "accent": "#C6FF3D"},
+  "fonts": {
+    "headline": {"family": "Futura", "weight": 700},
+    "body": {"family": "Avenir Next", "weight": 400},
+    "aside": {"family": "Georgia, serif", "style": "italic"}
+  }
+}

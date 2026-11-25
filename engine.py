@@ -204,7 +204,7 @@ def render(spec_path, out):
         for n, slide in enumerate(slides, 1):
             image = prepare_image(slide["image"], base, work, n) if slide.get("image") else None
             page = work / f"slide{n:02}.html"
-            page.write_text(slide_html(slide, n, len(slides), brand, spec.get("handle", ""), links, fonts, image))
+            page.write_text(slide_html(slide, n, len(slides), brand, spec.get("handle") or brand.get("handle", ""), links, fonts, image))
             png = out / f"slide{n:02}.png"
             screenshot(page, png, brand["size"], profile)
             pngs.append(png)

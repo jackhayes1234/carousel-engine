@@ -19,6 +19,11 @@ Claude clones it, checks Chrome, Pillow and the cutout tool, creates `~/Desktop/
 and runs the self-test. If it asks you to click Install in an Apple window, do that.
 Restart Claude Code once afterwards so the skill is picked up in new sessions.
 
+## Make it look like yours
+Say **"learn my style"**. Claude opens a `style` folder: drop in 5–10 slides from your best carousels (or your
+Instagram archive's images). It studies them, writes your colours, fonts, emphasis style, photo treatment and voice
+into `~/Desktop/Carousels/brand.json` and `style.md`, then test-renders one of your slides and tweaks until it matches.
+
 ## Make a carousel
 Say **"new carousel called blake-pr"**. Claude makes the folder and opens it. Drop your screenshots into `shots`,
 paste your script into the chat, and approve the slide plan. Finished slides land in the folder's `out` folder.

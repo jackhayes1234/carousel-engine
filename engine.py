@@ -82,6 +82,7 @@ def load_brand(path):
         for font in brand["fonts"].values():
             if font.get("file"):
                 font["file"] = (path.parent / font["file"]).resolve().as_uri()
+        brand["dir"] = path.parent.resolve().as_uri() + "/"  # relative url()s in brand css resolve here
     return brand
 
 
@@ -131,24 +132,35 @@ def prepare_image(spec, base, work, n):
     return cut, True
 
 
+def body_html(slide):
+    if slide.get("layout") == "list":
+        return "<ol>" + "".join(f"<li>{markup(l)}</li>" for l in slide["body"].splitlines() if l.strip()) + "</ol>"
+    return markup(slide["body"])
+
+
 def slide_html(slide, n, total, brand, handle, links, fonts, image):
     W, H = brand["size"]
     c = brand["colors"]
     parts = {
         "h": f'<div class="h f-headline">{markup(slide["headline"])}</div>' if slide.get("headline") else "",
-        "b": f'<div class="b f-body">{markup(slide["body"])}</div>' if slide.get("body") else "",
+        "b": f'<div class="b f-body" data-handle="{html.escape(handle)}">{body_html(slide)}</div>'
+        if slide.get("body") else "",
         "p": "",
     }
     if image:
         path, is_cut = image
         parts["p"] = f'<div class="pic {"cut" if is_cut else "photo"}"><img src="{path.as_uri()}"></div>'
-    order = "hpb" if slide.get("layout") == "image" else "hbp"
+    layout = slide.get("layout", "text")
+    order = {"image": "hpb", "quote": "bhp"}.get(layout, "hbp")
+    classes = f"{layout} slide-{n}" + (" first" if n == 1 else "") + (" last" if n == total else "")
+    base = f'<base href="{brand["dir"]}">' if brand.get("dir") else ""
+    custom = "\n".join(brand["css"]) if isinstance(brand.get("css"), list) else brand.get("css", "")
     swipe = "swipe →" if n < total else ""
-    return f"""<!doctype html><html><head><meta charset="utf-8">{links}<style>{fonts}
+    return f"""<!doctype html><html><head><meta charset="utf-8">{base}{links}<style>{fonts}
 *{{margin:0;box-sizing:border-box}}
 html,body{{width:{W}px;height:{H}px;overflow:hidden;background:{c['bg']};color:{c['text']}}}
 body{{padding:96px 84px 120px;display:flex;flex-direction:column;gap:44px}}
-body.text{{justify-content:safe center}}
+body.text,body.quote,body.list,body.tweet{{justify-content:safe center}}
 .h,.b{{overflow-wrap:anywhere}}
 .h{{font-size:92px;line-height:1.04;letter-spacing:-.02em;flex:none}}
 body.cover .h{{font-size:132px}}
@@ -163,15 +175,25 @@ body.cover .h{{font-size:132px}}
   font-size:26px;z-index:2}}
 .foot span{{background:{c['bg']};padding:4px 12px;border-radius:99px;opacity:.75}}
 .foot span:empty{{visibility:hidden}}
+body.quote .b{{font-size:66px;line-height:1.2}}
+body.quote .b::before{{content:"\\201C";display:block;font:700 220px/.75 Georgia,serif;color:{c['accent']}}}
+body.quote .h{{font-size:40px;opacity:.75}}
+ol{{list-style:none;padding:0;counter-reset:i;display:flex;flex-direction:column;gap:30px}}
+li{{counter-increment:i;display:flex;gap:30px}}
+li::before{{content:counter(i);color:{c['accent']};font-weight:800;font-size:1.5em;line-height:1;min-width:1.1em}}
+body.tweet .b{{background:#fff;color:#0f1419;border-radius:36px;padding:56px;box-shadow:0 20px 60px rgba(0,0,0,.15)}}
+body.tweet .b::before{{content:attr(data-handle);display:block;font-weight:700;font-size:.8em;margin-bottom:20px}}
+{custom}
 </style></head>
-<body class="{slide.get('layout', 'text')}">
+<body class="{classes}">
 {''.join(parts[k] for k in order)}
 <div class="foot f-body"><span>{html.escape(handle)}</span><span>{n}/{total}</span><span>{swipe}</span></div>
 <script>
 document.fonts.ready.then(() => {{
-  const text = [...document.querySelectorAll('.h,.b')];
-  for (let i = 0; i < 60 && (document.body.scrollHeight > {H} + 1 ||
-       Math.max(...text.map(e => e.getBoundingClientRect().bottom)) > {H} - 110); i++)
+  // layout boxes only: transforms and shadows from brand css must not count as overflow
+  const text = [...document.querySelectorAll('.h,.b')], boxes = [...document.querySelectorAll('.h,.b,.pic')];
+  const over = () => boxes.some(e => e.getBoundingClientRect().bottom > (e.matches('.cut') ? {H} + 1 : {H} - 110));
+  for (let i = 0; i < 60 && over(); i++)
     for (const el of text) el.style.fontSize = parseFloat(getComputedStyle(el).fontSize) * 0.95 + 'px';
 }});
 </script></body></html>"""

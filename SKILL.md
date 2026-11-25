@@ -1,6 +1,6 @@
 ---
 name: carousel-engine
-description: Turn a carousel script plus messy screenshots into finished Instagram/LinkedIn carousel slides (1080x1350 PNGs, a PDF and a contact sheet) in the user's brand fonts and colours. Use when the user says "make a carousel", drops a script with "Slide 1, Slide 2...", or hands over screenshots for slides. Also use when they ask to set up, install or check the carousel engine, or to start a new carousel.
+description: Turn a carousel script plus messy screenshots into finished Instagram/LinkedIn carousel slides (1080x1350 PNGs, a PDF and a contact sheet) in the user's brand fonts and colours. Use when the user says "make a carousel", drops a script with "Slide 1, Slide 2...", or hands over screenshots for slides. Also use when they ask to set up, install or check the carousel engine, to start a new carousel, or to learn or copy their style from their own carousels or Instagram.
 ---
 
 # Carousel engine
@@ -10,7 +10,7 @@ macOS 14 or later, Python 3 with Pillow, and Google Chrome.
 
 Run engine.py by its full path in this skill's folder (normally `~/.claude/skills/carousel-engine/engine.py`).
 Carousels live in `~/Desktop/Carousels/`, one folder (the `<job>`) per carousel, and the saved brand is
-`~/Desktop/Carousels/brand.json`.
+`~/Desktop/Carousels/brand.json`, with notes on their style in `~/Desktop/Carousels/style.md`.
 
 ## Setup (on first use, or when the user asks to install, set up or check it)
 
@@ -25,7 +25,49 @@ Check each item and fix what you can. Tell the user, in plain words, about anyth
    of a carousel style they like. Save them to `~/Desktop/Carousels/brand.json` (format: `example/brand.json`,
    plus `"handle": "@them"`). If they skip this, the default cream and pink look is used.
 7. Run the self-test: `cd ~/.claude/skills/carousel-engine && python3 -m unittest test_engine`. It must say OK.
-8. Tell them setup is done, and how to start: "say *new carousel* and give it a name".
+8. Tell them setup is done. Then offer **Learn my style** (below): it is what makes carousels look like theirs
+   and not like a template. After that, they start with "new carousel" and a name.
+
+## Learn my style (when the user says "learn my style", or setup offers it)
+
+1. **Get examples of their work.** Make `~/Desktop/Carousels/style/`, open it in Finder, and ask for 5–10
+   slides from their best carousels (screenshots are fine; covers and inside slides both help). If they have
+   their Instagram archive (Instagram → Settings → Accounts Centre → Your information and permissions →
+   Download your information), unzip it and copy the carousel images from its `media/posts` folders into `style/`.
+   Don't scrape Instagram or log in to it for them.
+2. **Study every image** (open each one and look). Write `~/Desktop/Carousels/style.md` covering:
+   palette (exact hex values), fonts (closest installed match: look in `/System/Library/Fonts`,
+   `/Library/Fonts` and `~/Library/Fonts`; ask if they own the real font files), how they
+   emphasise words (underline, highlighter, colour, circled, all caps), how they treat photos (stickers, frames,
+   tilt, outlines, full-bleed), backgrounds and textures, text placement and density, which layouts they reuse,
+   and their writing voice (hooks, sentence length, slang, sign-offs, emoji use).
+3. **Write the brand.** Put colours, fonts and handle in `~/Desktop/Carousels/brand.json`, and recreate the rest
+   with `"css"`, a list of CSS rules added after the engine's own (see *Styling hooks*). Put any texture or
+   background images next to brand.json and refer to them by file name, e.g. `url(paper.png)`; you can generate
+   one with Pillow.
+4. **Prove it.** Pick one of their slides, write a short script that copies its words, render it with the new
+   brand, and compare your render with the original side by side. Fix the differences (size, weight, spacing,
+   colours, emphasis, photo treatment) and re-render. Do up to three rounds, then show the user both and ask
+   what still feels off.
+5. From now on, read `style.md` before every carousel: match their voice when splitting copy and choosing
+   emphasis, and prefer the layouts they actually use.
+
+## Styling hooks
+
+The `"css"` rules in brand.json can target:
+- `body` (the whole slide; set `background` here), with classes for the layout (`cover`, `text`, `image`,
+  `list`, `quote`, `tweet`), the slide number (`slide-3`), and `first` / `last`
+- `.h` headline, `.b` body, `.em` the `*word*` emphasis, `.aside` the `_word_` emphasis, `.foot` the footer
+  (handle, page count, swipe), `.pic img` any image, `.cut img` a cutout sticker, `.photo img` a framed photo,
+  `ol` / `li` list items, `body.tweet .b` the tweet card, `body.quote .b::before` the quote mark
+- `.f-headline`, `.f-body`, `.f-aside` font roles
+
+Proven recipes:
+- Highlighter emphasis: `.em{text-decoration:none;background:linear-gradient(transparent 55%,#FFD43B 55%,#FFD43B 90%,transparent 90%)}`
+- Sticker with white outline and tilt: `.cut img{transform:rotate(-4deg);filter:drop-shadow(6px 0 0 #fff) drop-shadow(-6px 0 0 #fff) drop-shadow(0 6px 0 #fff) drop-shadow(0 -6px 0 #fff)}`
+- Polaroid photo: `.photo img{transform:rotate(2deg);border:14px solid #fff;border-radius:6px}`
+- Texture: `body{background:url(paper.png) center/cover}`
+Text auto-shrinks to fit even with transforms, so tilts and shadows are safe.
 
 ## Start a new carousel
 
@@ -52,8 +94,9 @@ If they paste the script, save it to `<job>/script.txt` yourself. When both are 
    - Fix headline/body splits. Keep headlines short and punchy, and put the rest in body.
    - Mark emphasis: `*word*` gives an accent underline, `_word_` gives the aside font in the accent colour.
      Use at most one or two per slide, on the words that carry the point.
-   - `layout` is `cover` (slide 1: big headline, image at the bottom), `text` (centred words)
-     or `image` (headline, image, then body).
+   - `layout` is `cover` (slide 1: big headline, image at the bottom), `text` (centred words),
+     `image` (headline, image, then body), `list` (each body line becomes a numbered point),
+     `quote` (body is the quote, headline is who said it) or `tweet` (body in a social-post card, headline above).
 
 3. **Match screenshots to slides.** Run `python3 engine.py info <job>/shots/*` to get sizes. Look at each
    screenshot and find the actual photo inside it, ignoring browser bars, search UI and captions.

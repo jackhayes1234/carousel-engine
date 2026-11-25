@@ -51,10 +51,16 @@ class RenderTest(unittest.TestCase):
             spec = {"handle": "@t", "slides": [
                 {"layout": "cover", "headline": "Hi *there*"},
                 {"layout": "image", "body": "words " * 300, "image": {"src": "shot.png", "crop": [10, 10, 200, 200]}},
-            ]}
+                {"layout": "list", "headline": "Three things", "body": "one\ntwo\nthree"},
+                {"layout": "quote", "headline": "Someone", "body": "A line"},
+                {"layout": "tweet", "body": "hot take"},
+            ], "brand": "brand.json"}
+            (d / "brand.json").write_text(json.dumps({"handle": "@b", "css": "body{background:url(bg.png)}"}))
             (d / "slides.json").write_text(json.dumps(spec))
             engine.render(d / "slides.json", d / "out")
-            for n in (1, 2):
+            self.assertIn('<base href=', (d / "out" / "work" / "slide01.html").read_text())
+            self.assertIn('<li>two</li>', (d / "out" / "work" / "slide03.html").read_text())
+            for n in (1, 2, 3, 4, 5):
                 self.assertEqual(Image.open(d / "out" / f"slide0{n}.png").size, (1080, 1350))
             self.assertTrue((d / "out" / "carousel.pdf").stat().st_size > 0)
             self.assertTrue((d / "out" / "contact-sheet.jpg").exists())
